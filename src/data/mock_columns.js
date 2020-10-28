@@ -47,7 +47,7 @@ const columns = {
   },
 };
 
-const columnsHidden = ['id', 'country', 'city', 'suffix', 'gender', 'contacts', 'asset', 'debt', ];
+const columnsHidden = ['id', 'country', 'city', 'suffix', 'gender', 'asset', 'debt', ];
 
 const groupColumns = [
   { id: 'country', type: 'match', criteria: [], },

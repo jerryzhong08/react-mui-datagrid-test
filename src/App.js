@@ -1,9 +1,10 @@
 import React from 'react';
-import { Datagrid } from 'react-mui-datagrid';
 
 import { columns, columnsHidden, groupColumns } from './data/mock_columns';
 import { users } from './data/mock_users';
 import { investments } from './data/mock_pie_charts';
+
+import { Datagrid } from 'react-mui-datagrid';
 
 import SampleAvatar0 from './images/SampleAvatar0.png';
 import SampleAvatar1 from './images/SampleAvatar1.png';
@@ -56,14 +57,15 @@ export default function App() {
 
   // s_users store the data and are affected by user updates (e.g. delete, edit)
   const [s_users, setUsers] = React.useState(users.slice(0, 1000));
-  // const [s_users, setUsers] = React.useState(users.slice(150, 156));
   // const [s_users, setUsers] = React.useState([]);
   // s_rows reflect data transformation made to the data (e.g. currency convert)
   const [s_rows, setRows] = React.useState(s_users);
   const [s_columnInfo, setColumnInfo] = React.useState({
     columns: columns,
     columnsHidden: columnsHidden,
-    groupColumns: groupColumns,
+    // columnsHidden: [],
+    // groupColumns: groupColumns,
+    groupColumns: [],
   });
 
   const handleSettingsUpdate = (columns, columnsHidden, groupColumns) => {
@@ -232,19 +234,18 @@ export default function App() {
           title: 'New Users',
           desc: 'users joined since start of year',
           width: '98vw',
-          height: '92vh',
+          height: '65vh',
         }}
         columns={s_columnInfo.columns}
         columnsHidden={s_columnInfo.columnsHidden}
-        // groupColumns={s_columnInfo.groupColumns}
-        groupColumns={[]}
-        // defaultRow={rowDefault}
-        defaultRow={{}}
+        groupColumns={s_columnInfo.groupColumns}
+        defaultRow={rowDefault}
+        // defaultRow={{}}
         rows={s_rows}
         pieCharts={{ 'investments': investments }}
         images={{ 'avatar': avatars }}
-        rowsPerPageOptions={[10, 20, 30]}
-        // useVirtualization={true}
+        // rowsPerPageOptions={[15, 25, 50]}
+        useVirtualization={true}
         showStats={'top'}
         onRowUpdated={handleUserUpdate}
         onRowDeleted={handleUserDelete}
@@ -258,3 +259,5 @@ export default function App() {
     </div>
   );
 }
+
+// export default App
