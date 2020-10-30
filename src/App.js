@@ -250,8 +250,8 @@ export default function App() {
           context: 'user',
           title: 'New Users',
           desc: 'users joined since start of year',
-          width: '98vw',
-          height: '92vh',
+          width: 98,
+          height: 92,
         }}
         columns={s_columnInfo.columns}
         columnsHidden={s_columnInfo.columnsHidden}
@@ -261,8 +261,8 @@ export default function App() {
         rows={mergedRows}
         pieCharts={{ 'investments': investments }}
         images={{ 'avatar': avatars }}
-        rowsPerPageOptions={[15, 25, 50]}
-        // useVirtualization={true}
+        // rowsPerPageOptions={[15, 25, 50]}
+        virtualization={{ rowHeight: 40 }}
         showStats={'top'}
         onRowUpdated={handleUserUpdate}
         onRowDeleted={handleUserDelete}
