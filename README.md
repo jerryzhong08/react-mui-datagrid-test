@@ -3,7 +3,13 @@
 
 [![NPM](https://img.shields.io/npm/v/react-mui-datagrid.svg)](https://www.npmjs.com/package/react-mui-datagrid) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-![react-mui-datagrid screen shot](./src/ScreenShot2.png)
+React-mui-datagrid in traditional style
+![react-mui-datagrid in classic](https://upload.wikimedia.org/wikipedia/commons/a/a0/ScreenShot-react-mui-datagrid-4.png)
+
+React-mui-datagrid in MUI style with sorting and 4-level grouping
+![react-mui-datagrid in MUI](https://upload.wikimedia.org/wikipedia/commons/b/b5/ScreenShot-react-mui-datagrid-8.png)
+
+See the [demo](https://codesandbox.io/s/kind-sky-1hetw) with playable user code.
 
 ## Features
 - Column customization and validation based on user-given types:
@@ -14,6 +20,7 @@ numeric, string, date, email, array, object, image, pie chart.
 - Expand and shrink individual row groups; one-click expand and shrink all row groups.
 - Calculate column-based, cross-row statistics such as sum, average, count and distinct count, and show them inside Datagrid headers or at Datagrid bottom.
 - Data conversion in viewing mode, e.g. choose a currency from dropdown and see asset numbers change accordingly.
+- Pagination or virtualization for large number of rows.
 - Users can mark rows as mutable or not based on their application logics.
 - Add, delete and update rows with error checkings and confirmation popups.
 - Data editing based on user choices, e.g.
@@ -38,10 +45,10 @@ numeric, string, date, email, array, object, image, pie chart.
   - customized data validation logics (work in progress).
   - built-in data composition, e.g. net asset = asset - debt (work in progress).
 - Performance improvements
-  - carefully implemented algorithms for manipulating matrix-style data (sorting, grouping, cross-reference).
+  - virtualized Datagrid with sticky stats bar at the bottom and auto re-render on window resizing.
+  - carefully implemented algorithms for manipulating matrix-style data (sorting, grouping, expand/shrink, and statistics).
   - separate data calculation and enhancement from DOM construction.
   - table pagination with page-change slider and user-provided page sizes.
-  - data virtualization (re-build datagrid without using MUI table and work on auto re-sizing).
   - use funtional components instead of class components.
   - use memoization with clearly defined dependencies.
 - Other useful datagrid features
@@ -50,7 +57,7 @@ numeric, string, date, email, array, object, image, pie chart.
   - export Datagrid contents to a csv file.
   - well-organized DOM element IDs to help element detection, e.g. for automated testing (work in progress).
 
-All the above features (and more to come) are driven by Props to react-mui-datagrid and simple user pluggins. You can still clone it to build your own datagrid, but the goal of react-mui-datagrid is to save that effort and let you focus on building your application.
+All the features above (and more to come) are driven by Props to react-mui-datagrid and simple user pluggins. You can still clone it to build your own datagrid, but the goal of react-mui-datagrid is to save that effort and let you focus on building your application.
 
 ## Installation
 ```bash
@@ -61,9 +68,11 @@ Note that react-mui-datagrid has the following peer dependencies, you need to in
 "peerDependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "prop-types": "15.7.2",
     "react": "^16.0.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-csv": "^2.0.3",
+    "react-dom": "^16.13.1",
     "react-minimal-pie-chart": "^8.0.1",
     "react-virtualized": "^9.22.2",
     "uuid": "^8.3.1"
@@ -151,16 +160,17 @@ To drive the rich behavior of react-mui-datagrid, a set of Props with minimized 
   - context: a singular noun to uniquely indicate what the Datagrid is about, e.g. 'user', 'contact'.
   - title: title of the Datagrid shown in the above-datagrid toolbar.
   - desc: text shown in the above-datagrid toolbar as description of the Datagrid.
-  - width: width of the entire Datagrid, e.g. 95vw.
-  - height: height of the entire Datagrid including the pagination bar, e.g. 90vh.
+  - width: width of the entire Datagrid, in unit vw, e.g. 95.
+  - height: height of the entire Datagrid including the pagination bar, in unit vh, e.g. 90.
 - **columns**: an object of objects that define how to display, update and validate data in the Datagrid.
 - **columnsHidden**: an array of IDs of columns not shown in the Datagrid. Column hiding feature is disabled if columnsHidden in undefined. Pass [] for columnsHidden if no columns are hidden initially.
 - **groupColumns**: an array of column IDs and grouping rules used to group rows. Column-based row grouping is disabled if groupColumns in undefined. Pass [] for groupColumns if no rows are grouped initially.
 - **defaultRow**: populate a new row when it is first created.
 - **rows**: an array of objects where each object defines the user data to fill the fields of a row. Row adding feature is disabled if rows is undefined. Pass [] if there are no rows initially.
 - **rowsPerPageOptions**: an array of number of rows per page, e.g. [10, 20, 30]. Datagrid pagination is disabled if rowsPerPageOptions is undefined, null, or empty.
-- **useVirtualization**: if true, use virtualized React table; if not defined or false, use MUI Table with no virtualization. Although technically doable, Datagrid pagination and virtualization should not be enabled at the same time.
-- **showStats**: one of ['top', 'bottom']. If defined, calculate and display cross-row statistics.
+- **virtualization**: an object that contains attributes used by the virtualized Datagrid. If not defined, use MUI Table with no virtualization. Although doable, Datagrid pagination and virtualization are usually not enabled at the same time.
+  - rowHeight: height of rows in the virtualized Datagrid, in unit px, e.g. 40.
+- **showStats**: if defined, calculate and display cross-row statistics. When *useVirtualizaion* is true, statistics are stickily displayed at the bottom of the Datagrid; otherwise, *showStatus* is one of ['top', 'bottom'], default is 'top'.
   - 'top': display statistics inside Datagrid headers so that they can always be seen.
   - 'bottom': display statistics as the last row, visible only when scrolled to the bottom.
 - **onRowUpdated**: user-provided callback function to handle updated row. Row editing is disabled if onRowUpdated is undefined.
@@ -180,8 +190,8 @@ To drive the rich behavior of react-mui-datagrid, a set of Props with minimized 
        context: 'user',
        title: 'New Users',
        desc: 'users joined since start of year',
-       width: '98vw',
-       height: '92vh',
+       width: 98,
+       height: 92,
     }}
     columns={columnData}
     columnsHidden={['id', 'suffix']}
@@ -189,7 +199,7 @@ To drive the rich behavior of react-mui-datagrid, a set of Props with minimized 
     defaultRow={{}}
     rows={rowData}
     rowsPerPageOptions={[10, 20, 30]}
-    // useVirtualization={true}
+    // useVirtualization={{ rowHeight: 40 }}
     showStats={'top'}
     onRowUpdated={handleUserUpdate}
     onRowDeleted={handleUserDelete}
@@ -303,7 +313,7 @@ const avatars = {
     avatar1: SampleAvatar1,
   };
 ```
-Then assign the variable such as 'avatar1' to corresponding field in the row:
+Then assign the variable such as 'avatar1' to corresponding field in the row. If such variable does not match any preloaded images, the Datagrid shows "image missing" in the cell. If no variable is assigned to the field, the Datagrid shows empty cell.
 ```jsx
 const rowData = [
   { id: "1153", firstName: "Shea", birthDate: "1981-06-07", email: "sborrel48@ameblo.jp", avatar: "avatar1", roles: ["Supplier", "Consumer", "Broker", ],  currency: "JPY", netAsset: 280742.82, investments: "(Pie chart: data missing)", mutable: false, },
@@ -330,6 +340,10 @@ contacts: { name: 'Contacts', label: 'Contacts', type: 'array', edit: 'table', s
     defaultRow: { type: 'Phone', contact: 'xxx-xxx-xxxx'},
 },
 ```
+
+Here is react-mui-datagrid with grouping, sorting and virtualization.
+![react-mui-datagrid with grouping and virtualization](https://upload.wikimedia.org/wikipedia/commons/7/71/ScreenShot-react-mui-datagrid-7.png)
+
 ### User pluggins
 #### 1. Attach data converter
 Data conversion is transforming the data in the viewing mode. For example, we can change all non-USD currencies to USD so that all associated money amounts are transformed to be denominated in USD which make statistics more meaningful. To do that, we can define a currency converter and attach that to the 'currency' column definition.
@@ -398,9 +412,6 @@ const citySelector = {
 }
 columnData.city.selector = citySelector;
 ```
-
-## Keywords
-**react MUI material-ui datagrid table pluggin pagination sorting grouping DnD style customization virtualization**
 
 ## License
 MIT © [](https://github.com/)
